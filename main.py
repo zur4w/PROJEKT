@@ -112,20 +112,68 @@ def add_employee():
 
 
 def delete_employee():
-    idx_airport = listbox_airports.curselection()
-    idx_employee = listbox_employees.curselection()
-
-    if not idx_airport or not idx_employee:
+    if not lotniska:
         return
 
-    idx_airport = idx_airport[0]
-    idx_employee = idx_employee[0]
+    idx_airport = listbox_airports.index(ACTIVE)
+    if idx_airport >= len(lotniska):
+        return
 
-    lotnisko = lotniska[idx_airport]
+    idx_employee = listbox_employees.index(ACTIVE)
+    if idx_employee >= len(lotniska[idx_airport].pracownicy):
+        return
 
-    if idx_employee < len(lotnisko.pracownicy):
-        del lotnisko.pracownicy[idx_employee]
-        show_employees_for_airport(idx_airport)
+    del lotniska[idx_airport].pracownicy[idx_employee]
+    show_employees_for_airport(idx_airport)
+    show_all_employees()
+
+
+def edit_employee():
+    if not lotniska:
+        return
+
+    idx_airport = listbox_airports.index(ACTIVE)
+    if idx_airport >= len(lotniska):
+        return
+
+    if not lotniska[idx_airport].pracownicy:
+        return
+
+    idx_employee = listbox_employees.index(ACTIVE)
+    if idx_employee >= len(lotniska[idx_airport].pracownicy):
+        return
+
+    pracownik = lotniska[idx_airport].pracownicy[idx_employee]
+
+    entry_imie.delete(0, END)
+    entry_nazwisko.delete(0, END)
+    entry_rola.delete(0, END)
+
+    entry_imie.insert(0, pracownik.imie)
+    entry_nazwisko.insert(0, pracownik.nazwisko)
+    entry_rola.insert(0, pracownik.rola)
+
+    button_add_employee.configure(text="Zapisz", command=lambda: update_employee(idx_airport, idx_employee))
+
+
+def update_employee(idx_airport, idx_employee):
+    pracownik = lotniska[idx_airport].pracownicy[idx_employee]
+    pracownik.imie = entry_imie.get()
+    pracownik.nazwisko = entry_nazwisko.get()
+    pracownik.rola = entry_rola.get()
+
+    entry_imie.delete(0, END)
+    entry_nazwisko.delete(0, END)
+    entry_rola.delete(0, END)
+
+    button_add_employee.configure(text="Dodaj pracownika", command=add_employee)
+
+    show_employees_for_airport(idx_airport)
+    show_all_employees()
+
+
+
+
 
 
 def show_employees_for_airport(idx):
@@ -218,6 +266,10 @@ entry_rola.grid(row=4, column=1, sticky=W)
 
 Button(frame_employees, text="Dodaj pracownika", command=add_employee).grid(row=5, column=1, sticky=E)
 Button(frame_employees, text="Pokaż pracowników na mapie", command=show_employee_map).grid(row=5, column=0)
+Button(frame_employees, text="Edytuj pracownika", command=edit_employee).grid(row=6, column=1, pady=5)
+
+button_add_employee = Button(frame_employees, text="Dodaj pracownika", command=add_employee)
+button_add_employee.grid(row=5, column=1, sticky=E)
 
 map_widget = tkintermapview.TkinterMapView(frame_map, width=1000, height=400)
 map_widget.set_position(52.0, 19.0)
