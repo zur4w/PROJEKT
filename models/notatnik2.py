@@ -1,5 +1,4 @@
 from tkinter import *
-import tkintermapview
 import requests
 from bs4 import BeautifulSoup
 
@@ -30,7 +29,7 @@ class Lotnisko:
         self.kod = kod
         self.location = location
         self.coordinates = self.get_coordinates()
-        self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1])
+        self.marker = None  # Mapa usunięta
         self.pracownicy = []
         self.klienci = []
 
@@ -66,7 +65,6 @@ def show_lotniska():
 
 def delete_airport():
     idx = listbox_airports.index(ACTIVE)
-    lotniska[idx].marker.delete()
     lotniska.pop(idx)
     show_lotniska()
 
@@ -78,10 +76,31 @@ def airport_details():
     lotnisko = lotniska[idx]
     label_name_val.config(text=lotnisko.name)
     label_code_val.config(text=lotnisko.kod)
-    map_widget.set_position(lotnisko.coordinates[0], lotnisko.coordinates[1])
-    map_widget.set_zoom(16)
     show_employees_for_airport(idx)
     show_clients_for_airport(idx)
+
+def edit_airport():
+    idx = listbox_airports.curselection()
+    if not idx:
+        return
+    idx = idx[0]
+    lotnisko = lotniska[idx]
+    entry_airport_name.delete(0, END)
+    entry_airport_name.insert(0, lotnisko.name)
+    entry_airport_code.delete(0, END)
+    entry_airport_code.insert(0, lotnisko.kod)
+
+def save_airport():
+    idx = listbox_airports.curselection()
+    if not idx:
+        return
+    idx = idx[0]
+    lotnisko = lotniska[idx]
+    lotnisko.name = entry_airport_name.get()
+    lotnisko.kod = entry_airport_code.get()
+    label_name_val.config(text=lotnisko.name)
+    label_code_val.config(text=lotnisko.kod)
+    show_lotniska()
 
 def add_employee():
     idx = listbox_airports.curselection()
@@ -103,6 +122,29 @@ def delete_employee():
     if idx_airport < len(lotniska) and idx_employee < len(lotniska[idx_airport].pracownicy):
         del lotniska[idx_airport].pracownicy[idx_employee]
         show_employees_for_airport(idx_airport)
+
+def edit_employee():
+    idx_airport = listbox_airports.index(ACTIVE)
+    idx_employee = listbox_employees.curselection()
+    if not idx_employee or idx_airport >= len(lotniska):
+        return
+    emp = lotniska[idx_airport].pracownicy[idx_employee[0]]
+    entry_imie.delete(0, END)
+    entry_imie.insert(0, emp.imie)
+    entry_nazwisko.delete(0, END)
+    entry_nazwisko.insert(0, emp.nazwisko)
+    entry_rola.delete(0, END)
+    entry_rola.insert(0, emp.rola)
+
+def save_employee():
+    idx_airport = listbox_airports.index(ACTIVE)
+    idx_employee = listbox_employees.curselection()
+    if not idx_employee or idx_airport >= len(lotniska):
+        return
+    lotniska[idx_airport].pracownicy[idx_employee[0]] = Pracownik(
+        entry_imie.get(), entry_nazwisko.get(), entry_rola.get()
+    )
+    show_employees_for_airport(idx_airport)
 
 def add_client():
     idx = listbox_airports.curselection()
@@ -126,103 +168,122 @@ def delete_client():
         del lotniska[idx_airport].klienci[idx_client]
         show_clients_for_airport(idx_airport)
 
-def show_map_with_markers(title, markers):
-    new_window = Toplevel(root)
-    new_window.title(title)
-    map_view = tkintermapview.TkinterMapView(new_window, width=800, height=600)
-    map_view.pack()
-    map_view.set_zoom(5)
-    for m in markers:
-        map_view.set_marker(*m["coords"], text=m["label"])
-    if markers:
-        map_view.set_position(*markers[0]["coords"])
-
-def show_all_airports_map():
-    markers = [{"coords": l.coordinates, "label": l.name} for l in lotniska]
-    show_map_with_markers("Mapa wszystkich lotnisk", markers)
-
-def show_all_clients_map():
-    markers = []
-    for l in lotniska:
-        for k in l.klienci:
-            markers.append({"coords": k.coordinates, "label": str(k)})
-    show_map_with_markers("Mapa wszystkich klientów", markers)
-
-def show_clients_map():
-    idx = listbox_airports.curselection()
-    if not idx:
+def edit_client():
+    idx_airport = listbox_airports.index(ACTIVE)
+    idx_client = listbox_clients.curselection()
+    if not idx_client or idx_airport >= len(lotniska):
         return
-    idx = idx[0]
-    markers = [{"coords": k.coordinates, "label": str(k)} for k in lotniska[idx].klienci]
-    show_map_with_markers("Klienci lotniska", markers)
+    klient = lotniska[idx_airport].klienci[idx_client[0]]
+    entry_client_imie.delete(0, END)
+    entry_client_imie.insert(0, klient.imie)
+    entry_client_nazwisko.delete(0, END)
+    entry_client_nazwisko.insert(0, klient.nazwisko)
+    entry_client_typ.delete(0, END)
+    entry_client_typ.insert(0, klient.typ)
 
-def show_employee_map_window():
-    idx = listbox_airports.curselection()
-    if not idx:
+def save_client():
+    idx_airport = listbox_airports.index(ACTIVE)
+    idx_client = listbox_clients.curselection()
+    if not idx_client or idx_airport >= len(lotniska):
         return
-    idx = idx[0]
-    markers = [{"coords": lotniska[idx].coordinates, "label": str(p)} for p in lotniska[idx].pracownicy]
-    show_map_with_markers("Pracownicy lotniska", markers)
+    lotniska[idx_airport].klienci[idx_client[0]] = Klient(
+        entry_client_imie.get(), entry_client_nazwisko.get(), entry_client_typ.get()
+    )
+    lotniska[idx_airport].klienci[idx_client[0]].coordinates = lotniska[idx_airport].coordinates
+    show_clients_for_airport(idx_airport)
 
+# --- UI ---
 root = Tk()
 root.title("System zarządzania lotniskami")
-root.geometry("1024x900")
+root.geometry("1200x700")
 
-frame_list = Frame(root)
-frame_list.pack()
-Label(frame_list, text="Lista lotnisk").pack()
-listbox_airports = Listbox(frame_list, width=60)
+main_frame = Frame(root)
+main_frame.pack(fill=BOTH, expand=True)
+
+# --- LOTNISKA ---
+frame_list = Frame(main_frame, width=400)
+frame_list.grid(row=0, column=0, padx=10, pady=10)
+
+Label(frame_list, text="Lista lotnisk", font=("Arial", 14, "bold")).pack()
+listbox_airports = Listbox(frame_list, width=40, height=10)
 listbox_airports.pack()
-Button(frame_list, text="Pokaż szczegóły", command=airport_details).pack()
-Button(frame_list, text="Usuń lotnisko", command=delete_airport).pack()
-Button(frame_list, text="Mapa lotnisk", command=show_all_airports_map).pack()
-Button(frame_list, text="Mapa wszystkich klientów", command=show_all_clients_map).pack()
 
+Button(frame_list, text="Pokaż dane lotniska", command=airport_details).pack(pady=2)
+Button(frame_list, text="Usuń lotnisko", command=delete_airport).pack(pady=2)
+Button(frame_list, text="Edytuj lotnisko", command=edit_airport).pack(pady=2)
+
+Label(frame_list, text="Formularz edycji i dodawania:").pack(pady=(10, 0))
+Label(frame_list, text="Nazwa lotniska").pack()
 entry_airport_name = Entry(frame_list)
 entry_airport_name.pack()
+Label(frame_list, text="Kod IATA").pack()
 entry_airport_code = Entry(frame_list)
 entry_airport_code.pack()
-Button(frame_list, text="Dodaj lotnisko", command=add_airport).pack()
+Button(frame_list, text="Dodaj lotnisko", command=add_airport).pack(pady=2)
+Button(frame_list, text="Zapisz zmiany", command=save_airport).pack(pady=2)
 
-label_name_val = Label(root, text="...")
+Label(frame_list, text="Szczegóły lotniska:", font=("Arial", 10, "bold")).pack(pady=(10, 0))
+Label(frame_list, text="Nazwa:").pack()
+label_name_val = Label(frame_list, text="...")
 label_name_val.pack()
-label_code_val = Label(root, text="...")
+Label(frame_list, text="Kod IATA:").pack()
+label_code_val = Label(frame_list, text="...")
 label_code_val.pack()
 
-frame_employees = Frame(root)
-frame_employees.pack()
-Label(frame_employees, text="Pracownicy").pack()
-listbox_employees = Listbox(frame_employees, width=60)
-listbox_employees.pack()
+# --- PRACOWNICY ---
+frame_employees = Frame(main_frame, width=400)
+frame_employees.grid(row=0, column=1, padx=10, pady=10)
 
+Label(frame_employees, text="Pracownicy").pack()
+listbox_employees = Listbox(frame_employees, width=40, height=15)
+listbox_employees.pack()
+Label(frame_employees, text="Imię").pack()
 entry_imie = Entry(frame_employees)
 entry_imie.pack()
+Label(frame_employees, text="Nazwisko").pack()
 entry_nazwisko = Entry(frame_employees)
 entry_nazwisko.pack()
+Label(frame_employees, text="Funkcja").pack()
 entry_rola = Entry(frame_employees)
 entry_rola.pack()
-Button(frame_employees, text="Dodaj pracownika", command=add_employee).pack()
-Button(frame_employees, text="Usuń pracownika", command=delete_employee).pack()
-Button(frame_employees, text="Mapa pracowników", command=show_employee_map_window).pack()
+Button(frame_employees, text="Dodaj pracownika", command=add_employee).pack(pady=2)
+Button(frame_employees, text="Usuń pracownika", command=delete_employee).pack(pady=2)
+Button(frame_employees, text="Edytuj pracownika", command=edit_employee).pack(pady=2)
+Button(frame_employees, text="Zapisz zmiany", command=save_employee).pack(pady=2)
 
-frame_clients = Frame(root)
-frame_clients.pack()
+# --- KLIENCI ---
+frame_clients = Frame(main_frame, width=400)
+frame_clients.grid(row=0, column=2, padx=10, pady=10)
+
 Label(frame_clients, text="Klienci").pack()
-listbox_clients = Listbox(frame_clients, width=60)
+listbox_clients = Listbox(frame_clients, width=40, height=15)
 listbox_clients.pack()
+Label(frame_clients, text="Imię").pack()
 entry_client_imie = Entry(frame_clients)
 entry_client_imie.pack()
+Label(frame_clients, text="Nazwisko").pack()
 entry_client_nazwisko = Entry(frame_clients)
 entry_client_nazwisko.pack()
+Label(frame_clients, text="Kierunek podróży").pack()
 entry_client_typ = Entry(frame_clients)
 entry_client_typ.pack()
-Button(frame_clients, text="Dodaj klienta", command=add_client).pack()
-Button(frame_clients, text="Usuń klienta", command=delete_client).pack()
-Button(frame_clients, text="Mapa klientów", command=show_clients_map).pack()
+Button(frame_clients, text="Dodaj klienta", command=add_client).pack(pady=2)
+Button(frame_clients, text="Usuń klienta", command=delete_client).pack(pady=2)
 
-map_widget = tkintermapview.TkinterMapView(root, width=1000, height=400)
-map_widget.set_position(52.0, 19.0)
-map_widget.set_zoom(6)
-map_widget.pack()
+Button(frame_clients, text="Edytuj klienta", command=edit_client).pack(pady=2)
+Button(frame_clients, text="Zapisz zmiany", command=save_client).pack(pady=2)
+
+
+# --- Szczegóły i mapa ---
+details_frame = Frame(root)
+details_frame.pack(pady=5)
+
+label_name_val = Label(details_frame, text="...")
+label_name_val.pack()
+label_code_val = Label(details_frame, text="...")
+label_code_val.pack()
+
+
+
 
 root.mainloop()

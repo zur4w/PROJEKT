@@ -179,6 +179,12 @@ def edit_employee():
     entry_rola.delete(0, END)
     entry_rola.insert(0, emp.rola)
 
+    # Aktualizacja szczegółów na dole
+    label_details_imie.config(text=emp.imie)
+    label_details_nazwisko.config(text=emp.nazwisko)
+    label_details_rola.config(text=emp.rola)
+
+
 
 def save_employee():
     idx_airport = listbox_airports.index(ACTIVE)
@@ -203,6 +209,12 @@ def edit_client():
     entry_client_nazwisko.insert(0, klient.nazwisko)
     entry_client_typ.delete(0, END)
     entry_client_typ.insert(0, klient.typ)
+
+    # Aktualizacja szczegółów na dole
+    label_client_imie.config(text=klient.imie)
+    label_client_nazwisko.config(text=klient.nazwisko)
+    label_client_typ.config(text=klient.typ)
+
 
 def save_client():
     idx_airport = listbox_airports.index(ACTIVE)
@@ -246,6 +258,9 @@ def save_airport():
 
 
 
+
+
+
 root = Tk()
 root.title("System zarządzania lotniskami")
 root.geometry("1200x900")
@@ -254,90 +269,165 @@ main_frame = Frame(root)
 main_frame.pack()
 
 
-# --- Lotniska ---
+# --- Lotniska (zmodyfikowane jak "remonty drogowe") ---
 frame_list = Frame(main_frame)
 frame_list.pack(side=LEFT, padx=10, pady=10)
 
-Label(frame_list, text="Lista lotnisk").pack()
-listbox_airports = Listbox(frame_list, width=40, height=15)
-listbox_airports.pack()
+Label(frame_list, text="Lista lotnisk", font=("Arial", 14, "bold")).grid(row=0, column=0, sticky="w")
 
-# Najpierw pola tekstowe
-Label(frame_list, text="Lotnisko").pack()
+
+listbox_airports = Listbox(frame_list, width=40, height=10)
+listbox_airports.grid(row=1, column=0, rowspan=4)
+
+# Przyciski pod listą
+Button(frame_list, text="Pokaż szczegóły", command=airport_details).grid(row=5, column=0, sticky="w", pady=2)
+Button(frame_list, text="Usuń lotnisko", command=delete_airport).grid(row=5, column=0, sticky="e", pady=2)
+Button(frame_list, text="Edytuj lotnisko", command=edit_airport).grid(row=6, column=0, pady=2)
+
+# Formularz edycji i dodawania
+Label(frame_list, text="Formularz edycji i dodawania:").grid(row=1, column=1, sticky="w")
+
+Label(frame_list, text="Nazwa lotniska").grid(row=2, column=1, sticky="w")
 entry_airport_name = Entry(frame_list)
-entry_airport_name.pack(pady=2)
-Label(frame_list, text="Kod IATA").pack()
+entry_airport_name.grid(row=3, column=1, padx=5, pady=2)
+
+Label(frame_list, text="Kod IATA").grid(row=4, column=1, sticky="w")
 entry_airport_code = Entry(frame_list)
-entry_airport_code.pack(pady=2)
+entry_airport_code.grid(row=5, column=1, padx=5, pady=2)
 
-# Następnie przyciski
-Button(frame_list, text="Dodaj lotnisko", command=add_airport).pack(pady=2)
-Button(frame_list, text="Pokaż szczegóły", command=airport_details).pack(pady=2)
-Button(frame_list, text="Usuń lotnisko", command=delete_airport).pack(pady=2)
-Button(frame_list, text="Mapa lotnisk", command=show_all_airports_map).pack(pady=2)
-Button(frame_list, text="Edytuj lotnisko", command=edit_airport).pack(pady=2)
-Button(frame_list, text="Zapisz zmiany", command=save_airport).pack(pady=2)
+Button(frame_list, text="Dodaj lotnisko", command=add_airport).grid(row=6, column=1, pady=2)
+Button(frame_list, text="Zapisz zmiany", command=save_airport).grid(row=7, column=1, pady=2)
+
+# Szczegóły
+Label(frame_list, text="Szczegóły lotniska:", font=("Arial", 10, "bold")).grid(row=8, column=0, columnspan=2, pady=(10, 0))
+Label(frame_list, text="Nazwa:").grid(row=9, column=0, sticky="w")
+label_name_val = Label(frame_list, text="---")
+label_name_val.grid(row=9, column=1, sticky="w")
+Label(frame_list, text="Kod IATA:").grid(row=10, column=0, sticky="w")
+label_code_val = Label(frame_list, text="---")
+label_code_val.grid(row=10, column=1, sticky="w")
 
 
-# --- Pracownicy ---
+
+# --- Pracownicy (zmodyfikowane jak "remonty drogowe", z zachowaniem "Mapa pracowników") ---
 frame_employees = Frame(main_frame)
 frame_employees.pack(side=LEFT, padx=10, pady=10)
 
-Label(frame_employees, text="Pracownicy").pack()
-listbox_employees = Listbox(frame_employees, width=40, height=15)
-listbox_employees.pack()
+Label(frame_employees, text="Lista pracowników lotnisk", font=("Arial", 14, "bold")).grid(row=0, column=0, sticky="w", columnspan=2)
 
 
-Label(frame_employees, text="Imię").pack()
+Label(frame_employees, text="Wybierz formułę wyświetlania pracowników").grid(row=1, column=0, columnspan=3)
+
+var_filter = IntVar()
+Radiobutton(frame_employees, text="Wszyscy pracownicy", variable=var_filter, value=1).grid(row=2, column=0, columnspan=3, sticky="w")
+Radiobutton(frame_employees, text="Pracownicy z danego lotniska", variable=var_filter, value=2).grid(row=3, column=0, columnspan=3, sticky="w")
+
+Button(frame_employees, text="Pokaż zaznaczone", command=lambda: show_employees_for_airport(listbox_airports.curselection()[0] if listbox_airports.curselection() else 0)).grid(row=4, column=0, columnspan=3, pady=(0, 5))
+
+listbox_employees = Listbox(frame_employees, width=40, height=10)
+listbox_employees.grid(row=5, column=0, columnspan=3)
+
+Button(frame_employees, text="Pokaż dane pracownika", command=edit_employee).grid(row=6, column=0, pady=2)
+Button(frame_employees, text="Usuń pracownika", command=delete_employee).grid(row=6, column=1, pady=2)
+Button(frame_employees, text="Edytuj pracownika", command=edit_employee).grid(row=6, column=2, pady=2)
+
+# Mapa pracowników — zostaje
+Button(frame_employees, text="Mapa pracowników", command=show_employee_map_window).grid(row=7, column=0, columnspan=3, pady=2)
+
+# Formularz edycji
+Label(frame_employees, text="Formularz edycji i dodawania:").grid(row=8, column=0, columnspan=3, sticky="w")
+
+Label(frame_employees, text="Imię").grid(row=9, column=0, sticky="w")
 entry_imie = Entry(frame_employees)
-entry_imie.pack(pady=2)
-Label(frame_employees, text="Nazwisko").pack()
+entry_imie.grid(row=9, column=1, columnspan=2, pady=2, sticky="we")
+
+Label(frame_employees, text="Nazwisko").grid(row=10, column=0, sticky="w")
 entry_nazwisko = Entry(frame_employees)
-entry_nazwisko.pack(pady=2)
-Label(frame_employees, text="Funkcja").pack()
+entry_nazwisko.grid(row=10, column=1, columnspan=2, pady=2, sticky="we")
+
+Label(frame_employees, text="Funkcja").grid(row=11, column=0, sticky="w")
+label_details_imie = Label(frame_employees, text="---")
+label_details_imie.grid(row=16, column=0)
+
+label_details_nazwisko = Label(frame_employees, text="---")
+label_details_nazwisko.grid(row=16, column=1)
+
+label_details_rola = Label(frame_employees, text="---")
+label_details_rola.grid(row=16, column=2)
+
 entry_rola = Entry(frame_employees)
-entry_rola.pack(pady=2)
+entry_rola.grid(row=11, column=1, columnspan=2, pady=2, sticky="we")
 
-Button(frame_employees, text="Dodaj pracownika", command=add_employee).pack(pady=2)
-Button(frame_employees, text="Usuń pracownika", command=delete_employee).pack(pady=2)
-Button(frame_employees, text="Mapa pracowników", command=show_employee_map_window).pack(pady=2)
-Button(frame_employees, text="Edytuj pracownika", command=edit_employee).pack(pady=2)
-Button(frame_employees, text="Zapisz zmiany", command=save_employee).pack(pady=2)
+Button(frame_employees, text="Dodaj pracownika", command=add_employee).grid(row=12, column=0, columnspan=3, pady=5)
+Button(frame_employees, text="Zapisz zmiany", command=save_employee).grid(row=13, column=0, columnspan=3, pady=5)
+
+# Szczegóły pracownika
+Label(frame_employees, text="Szczegóły pracowników:", font=("Arial", 10, "bold")).grid(row=14, column=0, columnspan=3)
+Label(frame_employees, text="Imię").grid(row=15, column=0)
+Label(frame_employees, text="Nazwisko").grid(row=15, column=1)
+Label(frame_employees, text="Funkcja").grid(row=15, column=2)
 
 
-# --- Klienci ---
+
+# --- Klienci (analogicznie do "pracownicy") ---
 frame_clients = Frame(main_frame)
 frame_clients.pack(side=LEFT, padx=10, pady=10)
 
-Label(frame_clients, text="Klienci").pack()
-listbox_clients = Listbox(frame_clients, width=40, height=15)
-listbox_clients.pack()
+Label(frame_clients, text="Lista klientów lotnisk", font=("Arial", 14, "bold")).grid(row=0, column=0, sticky="w", columnspan=2)
 
-Label(frame_clients, text="Imię").pack()
+Label(frame_clients, text="Wybierz formułę wyświetlania klientów").grid(row=1, column=0, columnspan=3)
+
+var_client_filter = IntVar()
+Radiobutton(frame_clients, text="Wszyscy klienci", variable=var_client_filter, value=1).grid(row=2, column=0, columnspan=3, sticky="w")
+Radiobutton(frame_clients, text="Klienci z danego lotniska", variable=var_client_filter, value=2).grid(row=3, column=0, columnspan=3, sticky="w")
+
+Button(frame_clients, text="Pokaż zaznaczone", command=lambda: show_clients_for_airport(listbox_airports.curselection()[0] if listbox_airports.curselection() else 0)).grid(row=4, column=0, columnspan=3, pady=(0, 5))
+
+listbox_clients = Listbox(frame_clients, width=40, height=10)
+listbox_clients.grid(row=5, column=0, columnspan=3)
+
+Button(frame_clients, text="Pokaż dane klienta", command=edit_client).grid(row=6, column=0, pady=2)
+Button(frame_clients, text="Usuń klienta", command=delete_client).grid(row=6, column=1, pady=2)
+Button(frame_clients, text="Edytuj klienta", command=edit_client).grid(row=6, column=2, pady=2)
+
+Button(frame_clients, text="Mapa klientów", command=show_clients_map).grid(row=7, column=0, columnspan=3, pady=2)
+
+# Formularz edycji
+Label(frame_clients, text="Formularz edycji i dodawania:").grid(row=8, column=0, columnspan=3, sticky="w")
+
+Label(frame_clients, text="Imię").grid(row=9, column=0, sticky="w")
 entry_client_imie = Entry(frame_clients)
-entry_client_imie.pack(pady=2)
-Label(frame_clients, text="Nazwisko").pack()
-entry_client_nazwisko = Entry(frame_clients)
-entry_client_nazwisko.pack(pady=2)
-Label(frame_clients, text="Kierunek podróży").pack()
-entry_client_typ = Entry(frame_clients)
-entry_client_typ.pack(pady=2)
+entry_client_imie.grid(row=9, column=1, columnspan=2, pady=2, sticky="we")
 
-Button(frame_clients, text="Dodaj klienta", command=add_client).pack(pady=2)
-Button(frame_clients, text="Usuń klienta", command=delete_client).pack(pady=2)
-Button(frame_clients, text="Mapa klientów", command=show_clients_map).pack(pady=2)
-Button(frame_clients, text="Edytuj klienta", command=edit_client).pack(pady=2)
-Button(frame_clients, text="Zapisz zmiany", command=save_client).pack(pady=2)
+Label(frame_clients, text="Nazwisko").grid(row=10, column=0, sticky="w")
+entry_client_nazwisko = Entry(frame_clients)
+entry_client_nazwisko.grid(row=10, column=1, columnspan=2, pady=2, sticky="we")
+
+Label(frame_clients, text="Kierunek podróży").grid(row=11, column=0, sticky="w")
+entry_client_typ = Entry(frame_clients)
+entry_client_typ.grid(row=11, column=1, columnspan=2, pady=2, sticky="we")
+label_client_imie = Label(frame_clients, text="---")
+label_client_imie.grid(row=16, column=0)
+
+label_client_nazwisko = Label(frame_clients, text="---")
+label_client_nazwisko.grid(row=16, column=1)
+
+label_client_typ = Label(frame_clients, text="---")
+label_client_typ.grid(row=16, column=2)
+
+
+Button(frame_clients, text="Dodaj klienta", command=add_client).grid(row=12, column=0, columnspan=3, pady=5)
+Button(frame_clients, text="Zapisz zmiany", command=save_client).grid(row=13, column=0, columnspan=3, pady=5)
+
+# Szczegóły klienta
+Label(frame_clients, text="Szczegóły klientów:", font=("Arial", 10, "bold")).grid(row=14, column=0, columnspan=3)
+Label(frame_clients, text="Imię").grid(row=15, column=0)
+Label(frame_clients, text="Nazwisko").grid(row=15, column=1)
+Label(frame_clients, text="Kierunek").grid(row=15, column=2)
 
 
 # --- Szczegóły i mapa ---
-details_frame = Frame(root)
-details_frame.pack(pady=5)
 
-label_name_val = Label(details_frame, text="...")
-label_name_val.pack()
-label_code_val = Label(details_frame, text="...")
-label_code_val.pack()
 
 map_widget = tkintermapview.TkinterMapView(root, width=1100, height=400)
 map_widget.set_position(52.0, 19.0)
