@@ -257,6 +257,30 @@ def save_airport():
     show_lotniska()
 
 
+def show_employees_filtered():
+    listbox_employees.delete(0, END)
+    if var_filter.get() == 1:  # Wszyscy pracownicy
+        for lotnisko in lotniska:
+            for p in lotnisko.pracownicy:
+                listbox_employees.insert(END, str(p))
+    elif var_filter.get() == 2:  # Pracownicy z danego lotniska
+        if listbox_airports.curselection():
+            idx = listbox_airports.curselection()[0]
+            show_employees_for_airport(idx)
+
+def show_clients_filtered():
+    listbox_clients.delete(0, END)
+    if var_client_filter.get() == 1:  # Wszyscy klienci
+        for lotnisko in lotniska:
+            for k in lotnisko.klienci:
+                listbox_clients.insert(END, str(k))
+    elif var_client_filter.get() == 2:  # Klienci z danego lotniska
+        if listbox_airports.curselection():
+            idx = listbox_airports.curselection()[0]
+            show_clients_for_airport(idx)
+
+
+
 
 
 
@@ -322,7 +346,8 @@ var_filter = IntVar()
 Radiobutton(frame_employees, text="Wszyscy pracownicy", variable=var_filter, value=1).grid(row=2, column=0, columnspan=3, sticky="w")
 Radiobutton(frame_employees, text="Pracownicy z danego lotniska", variable=var_filter, value=2).grid(row=3, column=0, columnspan=3, sticky="w")
 
-Button(frame_employees, text="Pokaż zaznaczone", command=lambda: show_employees_for_airport(listbox_airports.curselection()[0] if listbox_airports.curselection() else 0)).grid(row=4, column=0, columnspan=3, pady=(0, 5))
+Button(frame_employees, text="Pokaż zaznaczone", command=show_employees_filtered).grid(row=4, column=0, columnspan=3, pady=(0, 5))
+
 
 listbox_employees = Listbox(frame_employees, width=40, height=10)
 listbox_employees.grid(row=5, column=0, columnspan=3)
@@ -381,7 +406,7 @@ var_client_filter = IntVar()
 Radiobutton(frame_clients, text="Wszyscy klienci", variable=var_client_filter, value=1).grid(row=2, column=0, columnspan=3, sticky="w")
 Radiobutton(frame_clients, text="Klienci z danego lotniska", variable=var_client_filter, value=2).grid(row=3, column=0, columnspan=3, sticky="w")
 
-Button(frame_clients, text="Pokaż zaznaczone", command=lambda: show_clients_for_airport(listbox_airports.curselection()[0] if listbox_airports.curselection() else 0)).grid(row=4, column=0, columnspan=3, pady=(0, 5))
+Button(frame_clients, text="Pokaż zaznaczone", command=show_clients_filtered).grid(row=4, column=0, columnspan=3, pady=(0, 5))
 
 listbox_clients = Listbox(frame_clients, width=40, height=10)
 listbox_clients.grid(row=5, column=0, columnspan=3)
