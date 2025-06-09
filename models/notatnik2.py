@@ -23,6 +23,8 @@ class Lotnisko:
         self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1])
         self.pracownicy = []
 
+    selected_airport_idx = None  # Zapamiętuje aktywne lotnisko
+
     def get_coordinates(self) -> list:
         address_url: str = f"https://pl.wikipedia.org/wiki/{self.location}"
         response = requests.get(address_url).text
@@ -53,16 +55,20 @@ def delete_airport():
     show_all_employees()
 
 def airport_details():
+    global selected_airport_idx
     idx = listbox_airports.curselection()
     if not idx:
         return
     idx = idx[0]
+    selected_airport_idx = idx  # zapamiętaj wybrane lotnisko
+
     lotnisko = lotniska[idx]
     label_name_val.config(text=lotnisko.name)
     label_code_val.config(text=lotnisko.kod)
     map_widget.set_position(lotnisko.coordinates[0], lotnisko.coordinates[1])
     map_widget.set_zoom(16)
     show_employees_for_airport(idx)
+
 
 def edit_airport():
     idx = listbox_airports.index(ACTIVE)
@@ -112,20 +118,20 @@ def add_employee():
 
 
 def delete_employee():
-    idx_airport = listbox_airports.curselection()
+    global selected_airport_idx
     idx_employee = listbox_employees.curselection()
 
-    if not idx_airport or not idx_employee:
+    if selected_airport_idx is None or not idx_employee:
+        messagebox.showwarning("Błąd", "Wybierz pracownika (i wcześniej lotnisko).")
         return
 
-    idx_airport = idx_airport[0]
     idx_employee = idx_employee[0]
+    lotniska[selected_airport_idx].pracownicy.pop(idx_employee)
 
-    lotnisko = lotniska[idx_airport]
+    show_employees_for_airport(selected_airport_idx)
+    show_all_employees()
 
-    if idx_employee < len(lotnisko.pracownicy):
-        del lotnisko.pracownicy[idx_employee]
-        show_employees_for_airport(idx_airport)
+
 
 
 def show_employees_for_airport(idx):
@@ -151,6 +157,85 @@ def show_employee_map():
     for p in lotnisko.pracownicy:
         map_widget.set_marker(*lotnisko.coordinates, text=str(p))
 
+from tkinter import messagebox
+
+from tkinter import messagebox
+
+def edit_employee():
+    global selected_airport_idx
+    idx_employee = listbox_employees.curselection()
+
+    if selected_airport_idx is None or not idx_employee:
+        messagebox.showwarning("Błąd", "Wybierz pracownika (i wcześniej lotnisko).")
+        return
+
+    idx_employee = idx_employee[0]
+    pracownik = lotniska[selected_airport_idx].pracownicy[idx_employee]
+
+    entry_imie.delete(0, END)
+    entry_nazwisko.delete(0, END)
+    entry_rola.delete(0, END)
+
+    entry_imie.insert(0, pracownik.imie)
+    entry_nazwisko.insert(0, pracownik.nazwisko)
+    entry_rola.insert(0, pracownik.rola)
+
+    button_add_employee.config(
+        text="Zapisz",
+        command=lambda: update_employee(selected_airport_idx, idx_employee)
+    )
+
+
+def update_employee(idx_airport, idx_employee):
+    imie = entry_imie.get()
+    nazwisko = entry_nazwisko.get()
+    rola = entry_rola.get()
+
+    pracownik = lotniska[idx_airport].pracownicy[idx_employee]
+    pracownik.imie = imie
+    pracownik.nazwisko = nazwisko
+    pracownik.rola = rola
+
+    show_employees_for_airport(idx_airport)
+    show_all_employees()
+
+    entry_imie.delete(0, END)
+    entry_nazwisko.delete(0, END)
+    entry_rola.delete(0, END)
+
+    button_add_employee.config(text="Dodaj pracownika", command=add_employee)
+
+
+
+
+
+def update_employee(idx_airport, idx_employee):
+    imie = entry_imie.get()
+    nazwisko = entry_nazwisko.get()
+    rola = entry_rola.get()
+
+    lotniska[idx_airport].pracownicy[idx_employee] = Pracownik(imie, nazwisko, rola)
+
+    show_employees_for_airport(idx_airport)
+    show_all_employees()
+
+    entry_imie.delete(0, END)
+    entry_nazwisko.delete(0, END)
+    entry_rola.delete(0, END)
+
+    button_add_employee.config(text="Dodaj pracownika", command=add_employee)
+
+
+def get_selected_airport_index():
+    idx = listbox_airports.curselection()
+    if not idx:
+        return None
+    return idx[0]
+
+
+
+
+
 # === GUI ===
 root = Tk()
 root.title("System zarządzania siecią lotnisk")
@@ -174,6 +259,8 @@ listbox_airports.grid(row=1, column=0, columnspan=3)
 Button(frame_list, text="Pokaż szczegóły", command=airport_details).grid(row=2, column=0)
 Button(frame_list, text="Usuń lotnisko", command=delete_airport).grid(row=2, column=1)
 Button(frame_list, text="Edytuj lotnisko", command=edit_airport).grid(row=2, column=2)
+Button(frame_employees, text="Edytuj pracownika", command=edit_employee).grid(row=6, column=1, pady=5, sticky=E)
+
 
 Label(frame_form, text="Dodaj nowe lotnisko").grid(row=0, column=0, columnspan=2)
 Label(frame_form, text="Nazwa:").grid(row=1, column=0, sticky=W)
@@ -199,6 +286,7 @@ listbox_employees = Listbox(frame_employees, width=50)
 listbox_employees.grid(row=1, column=0)
 
 Button(frame_employees, text="Usuń pracownika", command=delete_employee).grid(row=6, column=0, pady=5)
+Button(frame_employees, text="Edytuj pracownika", command=edit_employee).grid(row=6, column=1, pady=5)
 
 Label(frame_employees, text="Wszyscy pracownicy").grid(row=0, column=1, sticky=W)
 listbox_all_employees = Listbox(frame_employees, width=50)
@@ -216,7 +304,9 @@ Label(frame_employees, text="Rola:").grid(row=4, column=0, sticky=W)
 entry_rola = Entry(frame_employees)
 entry_rola.grid(row=4, column=1, sticky=W)
 
-Button(frame_employees, text="Dodaj pracownika", command=add_employee).grid(row=5, column=1, sticky=E)
+button_add_employee = Button(frame_employees, text="Dodaj pracownika", command=add_employee)
+button_add_employee.grid(row=5, column=1, sticky=E)
+
 Button(frame_employees, text="Pokaż pracowników na mapie", command=show_employee_map).grid(row=5, column=0)
 
 map_widget = tkintermapview.TkinterMapView(frame_map, width=1000, height=400)
