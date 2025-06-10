@@ -283,52 +283,22 @@ def show_clients_filtered():
 import math
 
 def show_all_employees_map():
-    base_lat, base_lon = 52.0, 19.0  # środek Polski
-    all_employees = []
-    for lotnisko in lotniska:
-        all_employees.extend([(p, lotnisko.coordinates) for p in lotnisko.pracownicy])
-
-    total = len(all_employees)
-    if total == 0:
-        return
-
-    col_count = math.ceil(math.sqrt(total))
-    row_spacing = 0.01
-    col_spacing = 0.015
-
     markers = []
-    for i, (pracownik, coords) in enumerate(all_employees):
-        row = i // col_count
-        col = i % col_count
-        lat = base_lat + row * row_spacing
-        lon = base_lon + col * col_spacing
-        markers.append({"coords": [lat, lon], "label": str(pracownik)})
+    for lotnisko in lotniska:
+        for pracownik in lotnisko.pracownicy:
+            markers.append({"coords": lotnisko.coordinates, "label": str(pracownik)})
+    if markers:
+        show_map_with_markers("Mapa wszystkich pracowników", markers)
 
-    show_map_with_markers("Mapa wszystkich pracowników", markers)
 
 def show_all_clients_map():
-    base_lat, base_lon = 52.0, 19.0
-    all_clients = []
-    for lotnisko in lotniska:
-        all_clients.extend([(k, lotnisko.coordinates) for k in lotnisko.klienci])
-
-    total = len(all_clients)
-    if total == 0:
-        return
-
-    col_count = math.ceil(math.sqrt(total))
-    row_spacing = 0.01
-    col_spacing = 0.015
-
     markers = []
-    for i, (klient, coords) in enumerate(all_clients):
-        row = i // col_count
-        col = i % col_count
-        lat = base_lat + row * row_spacing
-        lon = base_lon + col * col_spacing
-        markers.append({"coords": [lat, lon], "label": str(klient)})
+    for lotnisko in lotniska:
+        for klient in lotnisko.klienci:
+            markers.append({"coords": klient.coordinates, "label": str(klient)})
+    if markers:
+        show_map_with_markers("Mapa wszystkich klientów", markers)
 
-    show_map_with_markers("Mapa wszystkich klientów", markers)
 
 
 
