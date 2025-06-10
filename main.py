@@ -30,7 +30,7 @@ class Lotnisko:
         self.kod = kod
         self.location = location
         self.coordinates = self.get_coordinates()
-        self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1])
+        self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1], text=self.name)
         self.pracownicy = []
         self.klienci = []
 
@@ -280,6 +280,55 @@ def show_clients_filtered():
             show_clients_for_airport(idx)
 
 
+import math
+
+def show_all_employees_map():
+    base_lat, base_lon = 52.0, 19.0  # środek Polski
+    all_employees = []
+    for lotnisko in lotniska:
+        all_employees.extend([(p, lotnisko.coordinates) for p in lotnisko.pracownicy])
+
+    total = len(all_employees)
+    if total == 0:
+        return
+
+    col_count = math.ceil(math.sqrt(total))
+    row_spacing = 0.01
+    col_spacing = 0.015
+
+    markers = []
+    for i, (pracownik, coords) in enumerate(all_employees):
+        row = i // col_count
+        col = i % col_count
+        lat = base_lat + row * row_spacing
+        lon = base_lon + col * col_spacing
+        markers.append({"coords": [lat, lon], "label": str(pracownik)})
+
+    show_map_with_markers("Mapa wszystkich pracowników", markers)
+
+def show_all_clients_map():
+    base_lat, base_lon = 52.0, 19.0
+    all_clients = []
+    for lotnisko in lotniska:
+        all_clients.extend([(k, lotnisko.coordinates) for k in lotnisko.klienci])
+
+    total = len(all_clients)
+    if total == 0:
+        return
+
+    col_count = math.ceil(math.sqrt(total))
+    row_spacing = 0.01
+    col_spacing = 0.015
+
+    markers = []
+    for i, (klient, coords) in enumerate(all_clients):
+        row = i // col_count
+        col = i % col_count
+        lat = base_lat + row * row_spacing
+        lon = base_lon + col * col_spacing
+        markers.append({"coords": [lat, lon], "label": str(klient)})
+
+    show_map_with_markers("Mapa wszystkich klientów", markers)
 
 
 
@@ -357,7 +406,10 @@ Button(frame_employees, text="Usuń pracownika", command=delete_employee).grid(r
 Button(frame_employees, text="Edytuj pracownika", command=edit_employee).grid(row=6, column=2, pady=2)
 
 # Mapa pracowników — zostaje
-Button(frame_employees, text="Mapa pracowników", command=show_employee_map_window).grid(row=7, column=0, columnspan=3, pady=2)
+Button(frame_employees, text="Mapa pracowników", command=show_employee_map_window).grid(row=7, column=0, pady=2, sticky="w")
+Button(frame_employees, text="Mapa wszystkich pracowników", command=show_all_employees_map).grid(row=7, column=1, pady=2, sticky="e")
+
+
 
 # Formularz edycji
 Label(frame_employees, text="Formularz edycji i dodawania:").grid(row=8, column=0, columnspan=3, sticky="w")
@@ -415,7 +467,11 @@ Button(frame_clients, text="Pokaż dane klienta", command=edit_client).grid(row=
 Button(frame_clients, text="Usuń klienta", command=delete_client).grid(row=6, column=1, pady=2)
 Button(frame_clients, text="Edytuj klienta", command=edit_client).grid(row=6, column=2, pady=2)
 
-Button(frame_clients, text="Mapa klientów", command=show_clients_map).grid(row=7, column=0, columnspan=3, pady=2)
+Button(frame_clients, text="Mapa klientów", command=show_clients_map).grid(row=7, column=0, pady=2, sticky="w")
+Button(frame_clients, text="Mapa wszystkich klientów", command=show_all_clients_map).grid(row=7, column=1, pady=2, sticky="e")
+
+
+
 
 # Formularz edycji
 Label(frame_clients, text="Formularz edycji i dodawania:").grid(row=8, column=0, columnspan=3, sticky="w")
