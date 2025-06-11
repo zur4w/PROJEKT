@@ -42,8 +42,8 @@ class Lotnisko:
             longitude = float(soup.select(".longitude")[1].text.replace(",", "."))
             latitude = float(soup.select(".latitude")[1].text.replace(",", "."))
             return [latitude, longitude]
-        except:
-            return [52.0, 19.0]
+        except Exception:
+            return None  # brak lokalizacji = brak markera
 
 def clear_form():
     entry_airport_name.delete(0, END)
@@ -285,8 +285,10 @@ import math
 def show_all_employees_map():
     markers = []
     for lotnisko in lotniska:
-        for pracownik in lotnisko.pracownicy:
-            markers.append({"coords": lotnisko.coordinates, "label": str(pracownik)})
+        if not lotnisko.pracownicy:
+            continue
+        label = "\n".join(str(pracownik) for pracownik in lotnisko.pracownicy)
+        markers.append({"coords": lotnisko.coordinates, "label": label})
     if markers:
         show_map_with_markers("Mapa wszystkich pracowników", markers)
 
@@ -294,10 +296,13 @@ def show_all_employees_map():
 def show_all_clients_map():
     markers = []
     for lotnisko in lotniska:
-        for klient in lotnisko.klienci:
-            markers.append({"coords": klient.coordinates, "label": str(klient)})
+        if not lotnisko.klienci:
+            continue
+        label = "\n".join(str(klient) for klient in lotnisko.klienci)
+        markers.append({"coords": lotnisko.coordinates, "label": label})
     if markers:
         show_map_with_markers("Mapa wszystkich klientów", markers)
+
 
 
 
