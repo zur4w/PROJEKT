@@ -153,16 +153,26 @@ def show_clients_map():
     if not idx:
         return
     idx = idx[0]
-    markers = [{"coords": k.coordinates, "label": str(k)} for k in lotniska[idx].klienci]
+    lotnisko = lotniska[idx]
+    if not lotnisko.klienci:
+        return
+    label = "\n".join(str(k) for k in lotnisko.klienci)
+    markers = [{"coords": lotnisko.coordinates, "label": label}]
     show_map_with_markers("Klienci lotniska", markers)
+
 
 def show_employee_map_window():
     idx = listbox_airports.curselection()
     if not idx:
         return
     idx = idx[0]
-    markers = [{"coords": lotniska[idx].coordinates, "label": str(p)} for p in lotniska[idx].pracownicy]
+    lotnisko = lotniska[idx]
+    if not lotnisko.pracownicy:
+        return
+    label = "\n".join(str(p) for p in lotnisko.pracownicy)
+    markers = [{"coords": lotnisko.coordinates, "label": label}]
     show_map_with_markers("Pracownicy lotniska", markers)
+
 
 
 # --- Edycja pracownika ---
