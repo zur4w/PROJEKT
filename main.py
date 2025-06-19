@@ -420,7 +420,6 @@ Label(frame_employees, text="Imię").grid(row=15, column=0)
 Label(frame_employees, text="Nazwisko").grid(row=15, column=1)
 Label(frame_employees, text="Funkcja").grid(row=15, column=2)
 
-
 # --- KLIENCI ---
 frame_clients = Frame(main_frame)
 frame_clients.pack(side=LEFT, padx=10, pady=10)
