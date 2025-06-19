@@ -232,7 +232,6 @@ def delete_client():
         del lotniska[idx_airport].klienci[idx_client]
         show_clients_for_airport(idx_airport)
 
-
 def edit_client():
     idx_airport = listbox_airports.index(ACTIVE)
     idx_client = listbox_clients.curselection()

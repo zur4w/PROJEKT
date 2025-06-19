@@ -3,7 +3,6 @@ import tkintermapview
 import requests
 from bs4 import BeautifulSoup
 
-
 lotniska = []
 
 class Pracownik:
@@ -232,7 +231,6 @@ def delete_client():
     if idx_airport < len(lotniska) and idx_client < len(lotniska[idx_airport].klienci):
         del lotniska[idx_airport].klienci[idx_client]
         show_clients_for_airport(idx_airport)
-
 
 def edit_client():
     idx_airport = listbox_airports.index(ACTIVE)
