@@ -6,23 +6,23 @@ from bs4 import BeautifulSoup
 lotniska = []
 
 class Pracownik:
-    def __init__(self, imie, nazwisko, rola):
+    def __init__(self, imie, nazwisko, funkcja):
         self.imie = imie
         self.nazwisko = nazwisko
-        self.rola = rola
+        self.funkcja = funkcja
 
     def __str__(self):
-        return f"{self.imie} {self.nazwisko} ({self.rola})"
+        return f"{self.imie} {self.nazwisko} ({self.funkcja})"
 
 class Klient:
-    def __init__(self, imie, nazwisko, typ):
+    def __init__(self, imie, nazwisko, kierunek_podrozy):
         self.imie = imie
         self.nazwisko = nazwisko
-        self.typ = typ
+        self.kierunek_podrozy = kierunek_podrozy
         self.coordinates = []
 
     def __str__(self):
-        return f"{self.imie} {self.nazwisko} ({self.typ})"
+        return f"{self.imie} {self.nazwisko} ({self.kierunek_podrozy})"
 
 class Lotnisko:
     def __init__(self, name, kod, location):
@@ -201,9 +201,8 @@ def save_employee():
     idx_employee = listbox_employees.curselection()
     if not idx_employee or idx_airport >= len(lotniska):
         return
-    lotniska[idx_airport].pracownicy[idx_employee[0]] = Pracownik(
-        entry_imie.get(), entry_nazwisko.get(), entry_rola.get()
-    )
+    lotniska[idx_airport].pracownicy[idx_employee[0]] = Pracownik(entry_imie.get(), entry_nazwisko.get(),
+                                                                  entry_rola.get())
     show_employees_for_airport(idx_airport)
 
 # --- Edycja klienta ---
@@ -231,9 +230,8 @@ def save_client():
     idx_client = listbox_clients.curselection()
     if not idx_client or idx_airport >= len(lotniska):
         return
-    lotniska[idx_airport].klienci[idx_client[0]] = Klient(
-        entry_client_imie.get(), entry_client_nazwisko.get(), entry_client_typ.get()
-    )
+    lotniska[idx_airport].klienci[idx_client[0]] = Klient(entry_client_imie.get(), entry_client_nazwisko.get(),
+                                                          entry_client_typ.get())
     lotniska[idx_airport].klienci[idx_client[0]].coordinates = lotniska[idx_airport].coordinates
     show_clients_for_airport(idx_airport)
 
@@ -312,10 +310,6 @@ def show_all_clients_map():
         markers.append({"coords": lotnisko.coordinates, "label": label})
     if markers:
         show_map_with_markers("Mapa wszystkich klientów", markers)
-
-
-
-
 
 
 
