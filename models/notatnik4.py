@@ -3,8 +3,6 @@ import tkintermapview
 import requests
 from bs4 import BeautifulSoup
 
-import math
-
 lotniska = []
 
 class Pracownik:
