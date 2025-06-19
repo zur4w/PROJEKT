@@ -2,8 +2,8 @@ from tkinter import *
 import tkintermapview
 import requests
 from bs4 import BeautifulSoup
-import math
 
+import math
 
 lotniska = []
 
@@ -263,6 +263,7 @@ def save_client():
     lotniska[idx_airport].klienci[idx_client[0]].coordinates = lotniska[idx_airport].coordinates
     show_clients_for_airport(idx_airport)
 
+
 def show_clients_filtered():
     listbox_clients.delete(0, END)
     if var_client_filter.get() == 1:  # Wszyscy klienci
@@ -293,14 +294,6 @@ def show_clients_map():
     markers = [{"coords": lotnisko.coordinates, "label": label}]
     show_map_with_markers("Klienci lotniska", markers)
 
-def show_all_clients_map():
-    markers = []
-    for l in lotniska:
-        for k in l.klienci:
-            markers.append({"coords": k.coordinates, "label": str(k)})
-    show_map_with_markers("Mapa wszystkich klientów", markers)
-
-
 
 def show_all_clients_map():
     markers = []
@@ -312,6 +305,7 @@ def show_all_clients_map():
     if markers:
         show_map_with_markers("Mapa wszystkich klientów", markers)
 
+
 def show_map_with_markers(title, markers):
     new_window = Toplevel(root)
     new_window.title(title)
@@ -322,6 +316,8 @@ def show_map_with_markers(title, markers):
         map_view.set_marker(*m["coords"], text=m["label"])
     if markers:
         map_view.set_position(*markers[0]["coords"])
+
+
 
 root = Tk()
 root.title("System zarządzania lotniskami")
