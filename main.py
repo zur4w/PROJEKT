@@ -43,7 +43,7 @@ class Lotnisko:
             latitude = float(soup.select(".latitude")[1].text.replace(",", "."))
             return [latitude, longitude]
         except Exception:
-            return None  # brak lokalizacji = brak markera
+            return None
 
 
 # FUNKCJE DLA LOTNISK
@@ -153,12 +153,7 @@ def edit_employee():
     entry_nazwisko.delete(0, END)
     entry_nazwisko.insert(0, emp.nazwisko)
     entry_rola.delete(0, END)
-    entry_rola.insert(0, emp.rola)
-
-    label_details_imie.config(text=emp.imie)
-    label_details_nazwisko.config(text=emp.nazwisko)
-    label_details_rola.config(text=emp.rola)
-
+    entry_rola.insert(0, emp.funkcja)
 
 def save_employee():
     idx_airport = listbox_airports.index(ACTIVE)
@@ -245,10 +240,6 @@ def edit_client():
     entry_client_typ.delete(0, END)
     entry_client_typ.insert(0, klient.typ)
 
-    label_client_imie.config(text=klient.imie)
-    label_client_nazwisko.config(text=klient.nazwisko)
-    label_client_typ.config(text=klient.typ)
-
 
 def save_client():
     idx_airport = listbox_airports.index(ACTIVE)
@@ -315,7 +306,6 @@ def show_map_with_markers(title, markers):
         map_view.set_position(*markers[0]["coords"])
 
 
-
 root = Tk()
 root.title("System zarządzania lotniskami")
 root.geometry("1200x900")
@@ -335,7 +325,7 @@ listbox_airports.grid(row=1, column=0, rowspan=4)
 # Przyciski pod listą
 Button(frame_list, text="Pokaż szczegóły", command=airport_details).grid(row=5, column=0, sticky="w", pady=2)
 Button(frame_list, text="Usuń lotnisko", command=delete_airport).grid(row=5, column=0, sticky="e", pady=2)
-Button(frame_list, text="Edytuj lotnisko", command=edit_airport).grid(row=6, column=0, pady=2)
+Button(frame_list, text="Edytuj lotnisko", command=edit_airport).grid(row=6, column=0, sticky="w", pady=2)
 
 # Formularz edycji i dodawania
 Label(frame_list, text="Formularz edycji i dodawania:").grid(row=1, column=1, sticky="w")
@@ -360,7 +350,6 @@ Label(frame_list, text="Kod IATA:").grid(row=10, column=0, sticky="w")
 label_code_val = Label(frame_list, text="---")
 label_code_val.grid(row=10, column=1, sticky="w")
 
-
 # --- PRACOWNICY  ---
 frame_employees = Frame(main_frame)
 frame_employees.pack(side=LEFT, padx=10, pady=10)
@@ -378,14 +367,14 @@ Button(frame_employees, text="Pokaż zaznaczone", command=show_employees_filtere
 listbox_employees = Listbox(frame_employees, width=40, height=10)
 listbox_employees.grid(row=5, column=0, columnspan=3)
 
-Button(frame_employees, text="Pokaż dane pracownika", command=edit_employee).grid(row=6, column=0, pady=2)
+Button(frame_employees, text="Dodaj pracownika", command=add_employee).grid(row=6, column=0, pady=2)
 Button(frame_employees, text="Usuń pracownika", command=delete_employee).grid(row=6, column=1, pady=2)
 Button(frame_employees, text="Edytuj pracownika", command=edit_employee).grid(row=6, column=2, pady=2)
+Button(frame_employees, text="Zapisz zmiany", command=save_employee).grid(row=7, column=2, pady=2)
 
 # Mapy pracowników
 Button(frame_employees, text="Mapa pracowników", command=show_employee_map_window).grid(row=7, column=0, pady=2, sticky="w")
 Button(frame_employees, text="Mapa wszystkich pracowników", command=show_all_employees_map).grid(row=7, column=1, pady=2, sticky="e")
-
 
 # Formularz edycji
 Label(frame_employees, text="Formularz edycji i dodawania:").grid(row=8, column=0, columnspan=3, sticky="w")
@@ -399,26 +388,8 @@ entry_nazwisko = Entry(frame_employees)
 entry_nazwisko.grid(row=10, column=1, columnspan=2, pady=2, sticky="we")
 
 Label(frame_employees, text="Funkcja").grid(row=11, column=0, sticky="w")
-label_details_imie = Label(frame_employees, text="---")
-label_details_imie.grid(row=16, column=0)
-
-label_details_nazwisko = Label(frame_employees, text="---")
-label_details_nazwisko.grid(row=16, column=1)
-
-label_details_rola = Label(frame_employees, text="---")
-label_details_rola.grid(row=16, column=2)
-
 entry_rola = Entry(frame_employees)
 entry_rola.grid(row=11, column=1, columnspan=2, pady=2, sticky="we")
-
-Button(frame_employees, text="Dodaj pracownika", command=add_employee).grid(row=12, column=0, columnspan=3, pady=5)
-Button(frame_employees, text="Zapisz zmiany", command=save_employee).grid(row=13, column=0, columnspan=3, pady=5)
-
-# Szczegóły pracownika
-Label(frame_employees, text="Szczegóły pracowników:", font=("Arial", 10, "bold")).grid(row=14, column=0, columnspan=3)
-Label(frame_employees, text="Imię").grid(row=15, column=0)
-Label(frame_employees, text="Nazwisko").grid(row=15, column=1)
-Label(frame_employees, text="Funkcja").grid(row=15, column=2)
 
 # --- KLIENCI ---
 frame_clients = Frame(main_frame)
@@ -437,14 +408,14 @@ Button(frame_clients, text="Pokaż zaznaczone", command=show_clients_filtered).g
 listbox_clients = Listbox(frame_clients, width=40, height=10)
 listbox_clients.grid(row=5, column=0, columnspan=3)
 
-Button(frame_clients, text="Pokaż dane klienta", command=edit_client).grid(row=6, column=0, pady=2)
+Button(frame_clients, text="Dodaj klienta", command=add_client).grid(row=6, column=0, pady=2)
 Button(frame_clients, text="Usuń klienta", command=delete_client).grid(row=6, column=1, pady=2)
 Button(frame_clients, text="Edytuj klienta", command=edit_client).grid(row=6, column=2, pady=2)
+Button(frame_clients, text="Zapisz zmiany", command=save_client).grid(row=7, column=2, pady=2)
 
 # Mapy klientów
 Button(frame_clients, text="Mapa klientów", command=show_clients_map).grid(row=7, column=0, pady=2, sticky="w")
 Button(frame_clients, text="Mapa wszystkich klientów", command=show_all_clients_map).grid(row=7, column=1, pady=2, sticky="e")
-
 
 # Formularz edycji
 Label(frame_clients, text="Formularz edycji i dodawania:").grid(row=8, column=0, columnspan=3, sticky="w")
@@ -460,24 +431,6 @@ entry_client_nazwisko.grid(row=10, column=1, columnspan=2, pady=2, sticky="we")
 Label(frame_clients, text="Kierunek podróży").grid(row=11, column=0, sticky="w")
 entry_client_typ = Entry(frame_clients)
 entry_client_typ.grid(row=11, column=1, columnspan=2, pady=2, sticky="we")
-label_client_imie = Label(frame_clients, text="---")
-label_client_imie.grid(row=16, column=0)
-
-label_client_nazwisko = Label(frame_clients, text="---")
-label_client_nazwisko.grid(row=16, column=1)
-
-label_client_typ = Label(frame_clients, text="---")
-label_client_typ.grid(row=16, column=2)
-
-
-Button(frame_clients, text="Dodaj klienta", command=add_client).grid(row=12, column=0, columnspan=3, pady=5)
-Button(frame_clients, text="Zapisz zmiany", command=save_client).grid(row=13, column=0, columnspan=3, pady=5)
-
-# Szczegóły klienta
-Label(frame_clients, text="Szczegóły klientów:", font=("Arial", 10, "bold")).grid(row=14, column=0, columnspan=3)
-Label(frame_clients, text="Imię").grid(row=15, column=0)
-Label(frame_clients, text="Nazwisko").grid(row=15, column=1)
-Label(frame_clients, text="Kierunek").grid(row=15, column=2)
 
 # --- MAPA ---
 
